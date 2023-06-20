@@ -70,7 +70,7 @@ def manager():
     scraper_pool = WorkerPool(scraper_process, 1, 5, crawler_to_scraper_queue, scraper_to_clusterer_queue)
     clusterer_pool = WorkerPool(cluster_process, 1, 1, scraper_to_clusterer_queue, None)
 
-    pools = {"crawlers": crawler_pool, 
+    pools = {"crawlers": crawler_pool,
              "scrapers":  scraper_pool,
              "clusterers": clusterer_pool}
 
@@ -78,7 +78,7 @@ def manager():
         for pool in pools:
             pools[pool].adjust_workers()
         
-        print("\n\n------------------------")
+        print("\n\n2----")
         print('--- Queues sizes ---')
         for name, queue in queues.items():
             print(f'{name}: {queue.qsize()}')

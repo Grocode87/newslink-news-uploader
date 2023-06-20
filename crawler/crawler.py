@@ -12,7 +12,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from db import create_session, Article, Cluster, Source
 
 
-
 def crawler_process(input_queue, output_queue):
     """
     Crawls news website sitemaps and finds articles to pass into the scraper queue
@@ -42,7 +41,9 @@ def crawler_process(input_queue, output_queue):
         #time.sleep(10 * 60)
 
 
-ns = {"news": "http://www.google.com/schemas/sitemap-news/0.9", "sitemap": "http://www.sitemaps.org/schemas/sitemap/0.9", "image": "http://www.google.com/schemas/sitemap-image/1.1"}
+ns = {"news": "http://www.google.com/schemas/sitemap-news/0.9", 
+      "sitemap": "http://www.sitemaps.org/schemas/sitemap/0.9", 
+      "image": "http://www.google.com/schemas/sitemap-image/1.1"}
 
 
 def parse_sitemap(source):
@@ -54,12 +55,11 @@ def parse_sitemap(source):
         article = Article()
 
         news = url.find('news:news', ns)
+        
         if(news):
             article.url = url.find('sitemap:loc', ns).text
             article.title = news.find('news:title', ns).text
             article.pubDate = news.find('news:publication_date', ns).text
-
-
 
             publication = news.find('news:publication', ns)
             if(publication):
@@ -70,9 +70,6 @@ def parse_sitemap(source):
                 "name": source.name,
                 "bias_ranking": source.bias_ranking,
             }
-
-
-
             
             image = url.find('image:image', ns)
             if(image):

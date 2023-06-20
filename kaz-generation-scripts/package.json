@@ -1,0 +1,16 @@
+{
+  "name": "neuraltimes-generation-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sanityupload.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sanity/client": "^6.1.2",
+    "gray-matter": "^4.0.3"
+  }
+}
