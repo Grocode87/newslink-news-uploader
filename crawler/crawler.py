@@ -4,18 +4,26 @@ from xml.etree import ElementTree
 
 import sys
 import os
+import pika
 
 sys.path.append(os.path.abspath("../"))
 from article import Article
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from db import create_session, Article, Cluster, Source
+from db import create_session, Source
+
+from message_broker import setup_queue, publish_message  # import the setup_queue function
+from constants import crawler_to_scraper_queue
+from article import Article
+
+connection, channel = setup_queue([crawler_to_scraper_queue])
 
 
-def crawler_process(input_queue, output_queue):
+def crawler_process():
     """
     Crawls news website sitemaps and finds articles to pass into the scraper queue
     """
+
     while True:
         session = create_session()
 
@@ -30,7 +38,9 @@ def crawler_process(input_queue, output_queue):
 
                 print("sucessfuly parsed sitemap: ", source.name, " with ", len(articles), " articles")
                 for article in articles:
-                    output_queue.put(article)
+                    # send to queue
+                    publish_message(channel=channel, queue_name=crawler_to_scraper_queue, message=article.to_json())
+
             except Exception as e:
                 print("could not read sitemap: ", source.name)
                 print(e)
@@ -55,7 +65,7 @@ def parse_sitemap(source):
         article = Article()
 
         news = url.find('news:news', ns)
-        
+
         if(news):
             article.url = url.find('sitemap:loc', ns).text
             article.title = news.find('news:title', ns).text
@@ -79,3 +89,7 @@ def parse_sitemap(source):
                 articles.append(article)
     
     return articles
+
+
+if __name__ == "__main__":
+    crawler_process()

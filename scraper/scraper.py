@@ -19,6 +19,10 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from db import create_session, Article, Cluster
+from message_broker import setup_queue, publish_message, consume_message
+from constants import crawler_to_scraper_queue, scraper_to_clusterer_queue
+
+connection, channel = setup_queue([crawler_to_scraper_queue, scraper_to_clusterer_queue])
 
 class Scraper():
     def __init__(self):
@@ -114,7 +118,7 @@ class Scraper():
         
 
 
-def scraper_process(input_queue, output_queue):
+def scraper_process():
     """
     Scrapes articles from the scraper queue
     Uploads articles to db
@@ -123,19 +127,14 @@ def scraper_process(input_queue, output_queue):
 
     scraper = Scraper()
 
-    for article in iter(input_queue.get, "STOP"):
+    for raw_article in consume_message(channel, crawler_to_scraper_queue):  # consume messages from the input queue
+        article = Article(json_rep=raw_article)
+        
         article = scraper.scrape_article(article)
 
         if article:
-            # TODO: upload article to db
+            publish_message(channel=channel, queue_name=scraper_to_clusterer_queue, message=article.to_json())
 
 
-            #article_num = len(os.listdir('scraper/articles'))
-
-            # save article to csv file
-            #with open("scraper/articles/" + str(article_num) + ".txt", "w") as f:
-            #    f.write(article.title + "\n" + article.text)
-
-            output_queue.put(article)
-        else:
-            pass
+if __name__ == "__main__":
+    scraper_process()
